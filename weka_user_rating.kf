@@ -1,0 +1,134 @@
+{
+	"flow_name" : "weka_user_rating",
+	"steps" : [
+		{
+			"class" : "weka.knowledgeflow.steps.Loader",
+			"properties" : {
+				"loader" : {
+					"type" : "loader",
+					"class" : "weka.core.converters.CSVLoader",
+					"filePath" : "../../../Users/patrickfurst/Documents/Uni/Experiment Design/Ex2/CoE_task/data/user_rating_data_exported.csv",
+					"useRelativePath" : true,
+					"options" : "-S 1 -format \"yyyy-MM-dd\\'T\\'HH:mm:ss\" -M N/A -B 100 -E \"\\\",\" -F ;"
+				},
+				"name" : "Load user rating"
+			},
+			"connections" : {
+				"dataSet" : [
+					"RemoveByName"
+				]
+			},
+			"coordinates" : "64,120"
+		},
+		{
+			"class" : "weka.knowledgeflow.steps.ClassAssigner",
+			"properties" : {
+				"classColumn" : "goodforairplane_binarized",
+				"name" : "ClassAssigner"
+			},
+			"connections" : {
+				"dataSet" : [
+					"CrossValidationFoldMaker"
+				]
+			},
+			"coordinates" : "442,121"
+		},
+		{
+			"class" : "weka.knowledgeflow.steps.CrossValidationFoldMaker",
+			"properties" : {
+				"name" : "CrossValidationFoldMaker",
+				"numFolds" : "10",
+				"preserveOrder" : false,
+				"seed" : "1"
+			},
+			"connections" : {
+				"trainingSet" : [
+					"PART"
+				],
+				"testSet" : [
+					"PART"
+				]
+			},
+			"coordinates" : "581,118"
+		},
+		{
+			"class" : "weka.knowledgeflow.steps.ClassifierPerformanceEvaluator",
+			"properties" : {
+				"costMatrixString" : "",
+				"errorPlotPointSizeProportionalToMargin" : false,
+				"evaluateWithRespectToCosts" : false,
+				"evaluationMetricsToOutput" : "Correct,Incorrect,Precision,Recall,F-measure",
+				"name" : "ClassifierPerformanceEvaluator"
+			},
+			"connections" : {
+				"text" : [
+					"TextViewer"
+				]
+			},
+			"coordinates" : "767,295"
+		},
+		{
+			"class" : "weka.knowledgeflow.steps.Filter",
+			"properties" : {
+				"filter" : {
+					"type" : "optionHandler",
+					"class" : "weka.filters.unsupervised.attribute.RemoveByName",
+					"options" : "-E filename"
+				},
+				"name" : "RemoveByName"
+			},
+			"connections" : {
+				"dataSet" : [
+					"NumericToBinary"
+				]
+			},
+			"coordinates" : "208,119"
+		},
+		{
+			"class" : "weka.knowledgeflow.steps.Filter",
+			"properties" : {
+				"filter" : {
+					"type" : "optionHandler",
+					"class" : "weka.filters.unsupervised.attribute.NumericToBinary",
+					"options" : "-R first"
+				},
+				"name" : "NumericToBinary"
+			},
+			"connections" : {
+				"dataSet" : [
+					"ClassAssigner"
+				]
+			},
+			"coordinates" : "313,120"
+		},
+		{
+			"class" : "weka.knowledgeflow.steps.TextViewer",
+			"properties" : {
+				"name" : "TextViewer"
+			},
+			"connections" : {
+			},
+			"coordinates" : "578,296"
+		},
+		{
+			"class" : "weka.knowledgeflow.steps.Classifier",
+			"properties" : {
+				"classifier" : {
+					"type" : "optionHandler",
+					"class" : "weka.classifiers.rules.PART",
+					"options" : "-M 2 -C 0.001 -Q 1 -J"
+				},
+				"loadClassifierFileName" : "",
+				"name" : "PART",
+				"resetIncrementalClassifier" : false,
+				"updateIncrementalClassifier" : true
+			},
+			"connections" : {
+				"batchClassifier" : [
+					"ClassifierPerformanceEvaluator"
+				]
+			},
+			"coordinates" : "769,119"
+		}
+	]
+}
